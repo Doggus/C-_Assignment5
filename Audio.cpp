@@ -4,12 +4,3 @@
 
 #include <iterator>
 #include "Audio.h"
-
-using namespace std;
-
-
-
-tldlir001::Audio::~Audio()
-{
-
-}

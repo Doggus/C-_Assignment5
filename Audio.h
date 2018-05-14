@@ -15,65 +15,72 @@
 
 namespace tldlir001
 {
+    //A can be 8 or 16 bit value
     template <typename A>
     class Audio
     {
     private:
-        int sPS; //-r
-        int size; //-b
-        int channels; //-c
-        std::vector<A> data;
+        //std::vector<A> data;
 
     public:
-        template <typename I>
-        Audio(int sps, int sz, int nc, std::string name)
+        std::vector<A> data;
+
+        Audio(std::vector<A> v)
         {
+            data = v;
+        }
 
-            sPS = sps;
-            size = sz;
-            channels = nc;
-
-            std::ifstream in(name,std::ifstream::binary);
-
-            if(!in)
+        Audio<A> operator+(const Audio<A> &rhs)
+        {
+            std::vector<A> v;
+            for (int i = 0; i < data.size(); ++i)
             {
-                std::cout << "Couldn't open file" << std::endl;
+                //push_back is used when the vector hasn't been assigned memory space beforehand
+                A result = this->data[i] + rhs.data[i];
+                v.push_back(result);
             }
-            else
-            {
-                in.seekg (0, in.end);
-                long length = in.tellg();// file size
-                in.seekg (0, in.beg);
 
-                char * buffer = new char [length];
+            Audio <A> audio(v);
 
-                in.read (buffer,length);
-
-                for (int i = 0; i < length; ++i)
-                {
-                    data[i] = buffer[i];
-                }
-
-
-                std::cout<<data[0] << std::endl;
-                //NumberOfSamples = fileSizeInBytes / (sizeof(intN_t) * channels)
-                //int samples = length/ (sizeof(intN_t)) * channels;
-
-                //deletes buffer from memory
-                delete[] buffer;
-
-            }
+            return audio;
         }
 
 
+        //~Audio();
 
 
+    };
 
-        A operator+(const A a);
+    //partial specialisation in the case where we are reading in pair of values that can be 8 or 16 bit
+    template <typename A>
+    class Audio <std::pair<A,A>>
+    {
+    private:
+        //std::vector<std::pair<A,A>> data;
 
-        ~Audio();
+    public:
+        std::vector<std::pair<A,A>> data;
 
+        Audio(std::vector<std::pair<A,A>> v)
+        {
+            data = v;
+        }
 
+        Audio operator+(const Audio &rhs) const
+        {
+            std::vector<std::pair<A,A>> v;
+            for (int i = 0; i < data.size(); ++i)
+            {
+                v[i].first = this->data[i].first + rhs.data[i].first;
+                v[i].second = this->data[i].second + rhs.data[i].second;
+            }
+
+            Audio <A> audio(v);
+
+            return audio;
+        }
+
+       // ~Audio();
     };
 }
 
