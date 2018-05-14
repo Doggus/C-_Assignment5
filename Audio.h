@@ -9,6 +9,8 @@
 #include <sstream>
 # include <cstdint>
 #include <iterator>
+#include <algorithm>
+#include <numeric>
 
 #ifndef AUDIOMANIPULATION_AUDIO_H
 #define AUDIOMANIPULATION_AUDIO_H
@@ -20,10 +22,20 @@ namespace tldlir001
     class Audio
     {
     private:
-        //std::vector<A> data;
+        std::vector<A> data;
 
     public:
-        std::vector<A> data;
+
+        std::vector<A> getData()
+        {
+            return data;
+        }
+
+        //default constructor
+        Audio()
+        {
+            data;
+        }
 
         //Normal constructor
         Audio(std::vector<A> v)
@@ -142,10 +154,41 @@ namespace tldlir001
             return audio;
         }
 
-        
+        Audio Reverse()
+        {
+            Audio<A> copy = *this;
+            std::reverse(copy.data.begin(),copy.data.end());
+            return copy;
+        }
+
+        Audio RangedAdd(int SampleRate, Audio &a1, Audio &a2, std::pair<int,int> p)
+        {
+            // samples are in seconds, so to get the number of samples : 
+            // multiply sampleRate(terminal parameter) with the pair intervals(seconds)
+            // e.g. number of samples per second * seconds passed = number of samples to add (range)
+            
+            std::vector<A> v;
+
+            int sampleBegin = SampleRate*p.first;
+            int sampleEnd = SampleRate*p.second;
+
+            for (int i = sampleBegin; i < sampleEnd; ++i)
+            {
+                 v.push_back(a1.data[i] + a2.data[i]);   
+            }
+            
+            Audio <A> audio(v);
+            return audio;
+            
+        }
+
+        Audio ComputeRMS()
+        {
+
+        }
 
 
-
+        //causes issues for some reason
         //~Audio();
 
 
@@ -156,10 +199,20 @@ namespace tldlir001
     class Audio <std::pair<A,A>>
     {
     private:
-        //std::vector<std::pair<A,A>> data;
+        std::vector<std::pair<A,A>> data;
 
     public:
-        std::vector<std::pair<A,A>> data;
+
+        std::vector<std::pair<A,A>> getData()
+        {
+            return data;
+        }
+
+        //default constructor
+        Audio()
+        {
+            data;
+        }
 
         //normal constructor
         Audio(std::vector<std::pair<A,A>> v)
@@ -276,8 +329,8 @@ namespace tldlir001
             return audio;
         }
         
-
-       // ~Audio();
+        //causes issues in tests for some reason
+       //~Audio();
     };
 }
 
