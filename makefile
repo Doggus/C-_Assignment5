@@ -1,4 +1,4 @@
-all : audio
+all : samp
 
 INCLUDE_DIRS =
 CPPFLAGS = $(INCLUDE_DIRS) -std=c++11
@@ -7,7 +7,7 @@ LIB_DIRS =
 LIBS = 
 LDFLAGS = $(LIBS) $(LIB_DIRS) -fPIC
 OBJECTS = main.o
-PROGRAM = audio
+PROGRAM = samp
 
 $(PROGRAM) : $(OBJECTS)
 	g++  $(OBJECTS) -o $(PROGRAM) $(LDFLAGS)

@@ -254,7 +254,7 @@ namespace tldlir001
             return audio;
         }
 
-        Audio FadeIn(int fadeSampleNo, int sampleRate, int seconds)
+        Audio FadeIn(float fadeSampleNo, int sampleRate, int seconds)
         {
             Audio<A> copy = *this;
             std::vector<A> v;
@@ -269,7 +269,7 @@ namespace tldlir001
             return audio;
         }
 
-        Audio FadeOut(int fadeSampleNo, int sampleRate, int seconds)
+        Audio FadeOut(float fadeSampleNo, int sampleRate, int seconds)
         {
             Audio<A> copy = *this;
             std::vector<A> v;
@@ -327,7 +327,7 @@ namespace tldlir001
 
         void save(std::string name)
         {
-            std::ofstream out("Audio_Output/" + name, std::ios::binary);
+            std::ofstream out(name, std::ios::binary);
             int bitSize = sizeof(A);
 
             for (int i = 0; i < data.size(); ++i)
@@ -551,7 +551,7 @@ namespace tldlir001
             return audio;
         }
 
-        Audio FadeIn(int fadeSampleNo, int sampleRate, int seconds)
+        Audio FadeIn(float fadeSampleNo, int sampleRate, int seconds)
         {
             Audio<std::pair<A,A>> copy = *this;
             std::vector<std::pair<A,A>> v;
@@ -566,7 +566,7 @@ namespace tldlir001
             return audio;
         }
 
-        Audio FadeOut(int fadeSampleNo, int sampleRate, int seconds)
+        Audio FadeOut(float fadeSampleNo, int sampleRate, int seconds)
         {
             Audio<std::pair<A,A>> copy = *this;
             std::vector<std::pair<A,A>> v;
@@ -612,16 +612,16 @@ namespace tldlir001
 
                     if(i % 2 == 0) //even
                     {
-                        in.read((char *) f, bitSize);
+                        in.read((char *) &f, bitSize);
                     }
                     else //odd
                     {
-                        in.read((char *) s, bitSize);
+                        in.read((char *) &s, bitSize);
                     }
 
                     if(i % 2 != 0)
                     {
-                        p = make_pair(f,s);
+                        p = std::make_pair(f,s);
                         data.push_back(p);
                     }
                     
@@ -633,7 +633,7 @@ namespace tldlir001
 
         void save(std::string name)
         {
-            std::ofstream out("Audio_Output/" + name, std::ios::binary);
+            std::ofstream out(name, std::ios::binary);
             int bitSize = sizeof(A);
 
             for (int i = 0; i < data.size(); ++i)
