@@ -195,7 +195,7 @@ namespace tldlir001
                  pwr.push_back(copy.data[i]*copy.data[i]); //power of 2
              }
 
-             int sum = std::accumulate(pwr.begin(),pwr.end(), 0);
+             float sum = std::accumulate(pwr.begin(),pwr.end(), 0);
              float avgSqr = sum/(copy.data.size());
              float RMS = sqrt(avgSqr);
              return RMS;
@@ -225,7 +225,7 @@ namespace tldlir001
 
                 for (int i = 0; i < fileLength; ++i)
                 {
-                    in.read((char *) &data[i], bitSize);
+                    in.read((char *) &data[i], bitSize); //reads value of bitSize into data[i]
                 }
 
                 //Alternative way of doing things
@@ -247,7 +247,7 @@ namespace tldlir001
 
         void save(std::string name)
         {
-            std::ofstream out(name, std::ios::binary);
+            std::ofstream out("Audio_Output/" + name, std::ios::binary);
             int bitSize = sizeof(A);
 
             for (int i = 0; i < data.size(); ++i)
@@ -401,6 +401,125 @@ namespace tldlir001
             return audio;
         }
         
+        Audio Reverse()
+        {
+            Audio<std::pair<A,A>> copy = *this;
+            std::reverse(copy.data.begin(),copy.data.end());
+            return copy;
+        }
+
+        Audio RangedAdd(int SampleRate, Audio &a1, Audio &a2, std::pair<int,int> p)
+        {
+            // samples are in seconds, so to get the number of samples : 
+            // multiply sampleRate(terminal parameter) with the pair intervals(seconds)
+            // e.g. number of samples per second * seconds passed = number of samples to add (range)
+            
+            std::vector<std::pair<A,A>> v;
+
+            int sampleBegin = SampleRate*p.first;
+            int sampleEnd = SampleRate*p.second;
+
+            for (int i = sampleBegin; i < sampleEnd; ++i)
+            {
+                 v.push_back(std::make_pair(a1.data[i].first + a2.data[i].first, a1.data[i].second + a2.data[i].second));   
+            }
+            
+            Audio <std::pair<A,A>> audio(v);
+            return audio;
+            
+        }
+
+        std::pair<float,float> ComputeRMS()
+        {
+             Audio<std::pair<A,A>> copy = *this;
+             std::vector<std::pair<A,A>> pwr;
+             for (int i = 0; i < copy.data.size(); ++i)
+             {
+                 //square everything
+                 pwr.push_back(std::make_pair(copy.data[i].first*copy.data[i].first, copy.data[i].second*copy.data[i].second));
+             }
+
+             float sumL = 0;
+             float sumR = 0;
+             for (int i = 0; i < copy.data.size(); ++i)
+             {
+                 sumL += pwr[i].first;
+                 sumR += pwr[i].second;
+
+             }
+
+             float avgSqrL = sumL/(copy.data.size());
+             float avgSqrR = sumR/(copy.data.size());
+             float RMS_L = sqrt(avgSqrL);
+             float RMS_R = sqrt(avgSqrR);
+             std::pair<float,float> p = std::make_pair(RMS_L,RMS_R);
+             return p;
+        }
+
+
+
+
+        void load(std::string name)
+        {
+            std::ifstream in(name);
+
+            if(!in)
+            {
+                std::cout << "Couldn't open file" << std::endl;
+            }
+            else
+            {
+                // get length of file: (got from online source given to us)
+                in.seekg (0, in.end);
+                int fileLength = in.tellg();
+                in.seekg (0, in.beg);
+
+                int bitSize = sizeof(A); //A is 8 bit or 16 bit
+                data.resize(fileLength/bitSize);
+
+                A f;
+                A s;
+                std::pair<A,A> p;
+                for (int i = 0; i < fileLength; ++i)
+                {
+                    //switches between each ear (pair.first = left ear | pair.second = right ear)
+
+                    if(i % 2 == 0) //even
+                    {
+                        in.read((char *) f, bitSize);
+                    }
+                    else //odd
+                    {
+                        in.read((char *) s, bitSize);
+                    }
+
+                    if(i % 2 != 0)
+                    {
+                        p = make_pair(f,s);
+                        data.push_back(p);
+                    }
+                    
+                }
+
+                in.close();
+            }
+        }
+
+        void save(std::string name)
+        {
+            std::ofstream out("Audio_Output/" + name, std::ios::binary);
+            int bitSize = sizeof(A);
+
+            for (int i = 0; i < data.size(); ++i)
+            {
+                 out.write((char*)&data[i],bitSize);
+            }  
+
+            out.close();
+           
+        }
+
+
         //destructor causes issues in tests for some reason
        //~Audio();
     };
