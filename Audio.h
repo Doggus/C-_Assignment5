@@ -7,10 +7,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-# include <cstdint>
+#include <istream>
+#include <ostream>
+#include <cstdint>
 #include <iterator>
 #include <algorithm>
 #include <numeric>
+#include <cmath>
+#include <memory>
 
 #ifndef AUDIOMANIPULATION_AUDIO_H
 #define AUDIOMANIPULATION_AUDIO_H
@@ -182,13 +186,81 @@ namespace tldlir001
             
         }
 
-        Audio ComputeRMS()
+        float ComputeRMS()
         {
+             Audio<A> copy = *this;
+             std::vector<A> pwr;
+             for (int i = 0; i < copy.data.size(); ++i)
+             {
+                 pwr.push_back(copy.data[i]*copy.data[i]); //power of 2
+             }
 
+             int sum = std::accumulate(pwr.begin(),pwr.end(), 0);
+             float avgSqr = sum/(copy.data.size());
+             float RMS = sqrt(avgSqr);
+             return RMS;
+        }
+
+        Audio Normalization()
+        {}
+
+
+        void load(std::string name)
+        {
+            std::ifstream in(name);
+
+            if(!in)
+            {
+                std::cout << "Couldn't open file" << std::endl;
+            }
+            else
+            {
+                // get length of file: (got from online source given to us)
+                in.seekg (0, in.end);
+                int fileLength = in.tellg();
+                in.seekg (0, in.beg);
+
+                int bitSize = sizeof(A); //A is 8 bit or 16 bit
+                data.resize(fileLength/bitSize);
+
+                for (int i = 0; i < fileLength; ++i)
+                {
+                    in.read((char *) &data[i], bitSize);
+                }
+
+                //Alternative way of doing things
+                /*
+                int count = 0;
+                while(in.tellg() < fileLength) //while not at the end of file
+                {
+                    //data reads in the number of bits = to template type
+                    in.read((char *) &data[count], bitSize); 
+                    ++count;
+                }
+                */
+
+                
+
+                in.close();
+            }
+        }
+
+        void save(std::string name)
+        {
+            std::ofstream out(name, std::ios::binary);
+            int bitSize = sizeof(A);
+
+            for (int i = 0; i < data.size(); ++i)
+            {
+                out.write((char*)&data[i],bitSize);
+            }
+
+            out.close();
+           
         }
 
 
-        //causes issues for some reason
+        //destructor causes issues for some reason
         //~Audio();
 
 
@@ -329,7 +401,7 @@ namespace tldlir001
             return audio;
         }
         
-        //causes issues in tests for some reason
+        //destructor causes issues in tests for some reason
        //~Audio();
     };
 }
