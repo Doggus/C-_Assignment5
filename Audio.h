@@ -260,8 +260,7 @@ namespace tldlir001
         }
 
 
-        //destructor causes issues for some reason
-        //~Audio();
+        ~Audio(){ /*nothing to explicitly destruct*/ }
 
 
     };
@@ -519,9 +518,7 @@ namespace tldlir001
            
         }
 
-
-        //destructor causes issues in tests for some reason
-       //~Audio();
+        ~Audio(){ /*nothing to explicitly destruct*/ }
     };
 }
 

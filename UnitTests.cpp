@@ -613,8 +613,108 @@ TEST_CASE("Stereo Audio Ranged Add method","Tests functionality of the Stereo Ra
 
 }
 
-//TESTS:
-   
+TEST_CASE("Mono Audio Compute RMS method","Tests functionality of the Mono Compute RMS method")
+{
+    //8 bit
 
-    //float rms = audio.ComputeRMS();
-    //cout << rms << endl;
+    std::vector<int8_t> v = {1,2,3,4};
+    tldlir001::Audio<int8_t> audio(v);
+    float rms = audio.ComputeRMS();
+
+    std::vector<float> pwr;
+    for (int i = 0; i < v.size(); ++i)
+    {
+        pwr.push_back(v[i]*v[i]); //power of 2
+    }
+
+    float sum = std::accumulate(pwr.begin(),pwr.end(), 0);
+    float avgSqr = sum/(v.size());
+    float RMS = sqrt(avgSqr);
+
+    REQUIRE(rms == RMS);    
+
+
+    //16 bit
+    
+    std::vector<int16_t> v2 = {1,2,3,4};
+    tldlir001::Audio<int16_t> audio2(v2);
+    float rms2 = audio2.ComputeRMS();
+
+    std::vector<float> pwr2;
+    for (int i = 0; i < v2.size(); ++i)
+    {
+        pwr2.push_back(v2[i]*v2[i]); //power of 2
+    }
+
+    float sum2 = std::accumulate(pwr2.begin(),pwr2.end(), 0);
+    float avgSqr2 = sum2/(v2.size());
+    float RMS2 = sqrt(avgSqr2);
+
+    REQUIRE(rms2 == RMS2);
+
+}
+
+TEST_CASE("Stereo Audio Compute RMS method","Tests functionality of the Stereo Compute RMS method")
+{
+    //8 bit
+
+    std::vector<pair<int8_t,int8_t>> v = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4)};
+    tldlir001::Audio<pair<int8_t,int8_t>> audio(v);
+    std::pair<float,float> p_RMS = audio.ComputeRMS();
+
+    std::vector<std::pair<float,float>> pwr;
+    for (int i = 0; i < v.size(); ++i)
+    {
+        //square everything
+        pwr.push_back(std::make_pair(v[i].first*v[i].first, v[i].second*v[i].second));
+    }
+
+    float sumL = 0;
+    float sumR = 0;
+    for (int i = 0; i < v.size(); ++i)
+    {
+        sumL += pwr[i].first;
+        sumR += pwr[i].second;
+
+    }
+
+    float avgSqrL = sumL/(v.size());
+    float avgSqrR = sumR/(v.size());
+    float RMS_L = sqrt(avgSqrL);
+    float RMS_R = sqrt(avgSqrR);
+
+    REQUIRE(p_RMS.first == RMS_L);
+    REQUIRE(p_RMS.second == RMS_R);
+
+    // 16 bit
+
+    std::vector<pair<int16_t,int16_t>> v2 = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4)};
+    tldlir001::Audio<pair<int16_t,int16_t>> audio2(v2);
+    std::pair<float,float> p_RMS2 = audio2.ComputeRMS();
+
+    std::vector<std::pair<float,float>> pwr2;
+    for (int i = 0; i < v.size(); ++i)
+    {
+        //square everything
+        pwr2.push_back(std::make_pair(v2[i].first*v2[i].first, v2[i].second*v2[i].second));
+    }
+
+    float sumL2 = 0;
+    float sumR2 = 0;
+    for (int i = 0; i < v2.size(); ++i)
+    {
+        sumL2 += pwr2[i].first;
+        sumR2 += pwr2[i].second;
+
+    }
+
+    float avgSqrL2 = sumL2/(v2.size());
+    float avgSqrR2 = sumR2/(v2.size());
+    float RMS_L2 = sqrt(avgSqrL2);
+    float RMS_R2 = sqrt(avgSqrR2);
+
+    REQUIRE(p_RMS2.first == RMS_L2);
+    REQUIRE(p_RMS2.second == RMS_R2);
+
+
+}
