@@ -718,3 +718,167 @@ TEST_CASE("Stereo Audio Compute RMS method","Tests functionality of the Stereo C
 
 
 }
+
+TEST_CASE("Mono Audio Normalisation method","Tests functionality of the Mono Normalisation method")
+{
+
+    //8 bit
+
+    std::vector<int8_t> v = {1,2,3,4};
+    tldlir001::Audio<int8_t> audio(v);
+    tldlir001::Audio<int8_t> audio2 = audio.Normalise(8);
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+        REQUIRE(audio2.getData()[i] == (int8_t)(audio.getData()[i]*(8/audio.ComputeRMS())));
+    }
+
+    //16 bit
+
+    std::vector<int16_t> v2 = {1,2,3,4};
+    tldlir001::Audio<int16_t> audio3(v2);
+    tldlir001::Audio<int16_t> audio4 = audio3.Normalise(8);
+
+    for (int i = 0; i < audio4.getData().size(); ++i)
+    {
+        REQUIRE(audio4.getData()[i] == (int16_t)(audio3.getData()[i]*(8/audio3.ComputeRMS())));
+    }
+
+}
+
+TEST_CASE("Stereo Audio Normalisation method","Tests functionality of the Stereo Normalisation method")
+{
+
+    //8 bit
+
+    std::vector<std::pair<int8_t,int8_t>> v = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4)};
+    tldlir001::Audio<std::pair<int8_t,int8_t>> audio(v);
+    tldlir001::Audio<std::pair<int8_t,int8_t>> audio2 = audio.Normalise(8,8);
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+        REQUIRE(audio2.getData()[i].first == (int8_t)(audio.getData()[i].first*(8/audio.ComputeRMS().first)));
+        REQUIRE(audio2.getData()[i].second == (int8_t)(audio.getData()[i].second*(8/audio.ComputeRMS().second)));
+    }
+
+    //16 bit
+
+    std::vector<std::pair<int16_t,int16_t>> v2 = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4)};
+    tldlir001::Audio<std::pair<int16_t,int16_t>> audio3(v2);
+    tldlir001::Audio<std::pair<int16_t,int16_t>> audio4 = audio3.Normalise(8,8);
+
+    for (int i = 0; i < audio4.getData().size(); ++i)
+    {
+        REQUIRE(audio4.getData()[i].first == (int16_t)(audio3.getData()[i].first*(8/audio3.ComputeRMS().first)));
+        REQUIRE(audio4.getData()[i].second == (int16_t)(audio3.getData()[i].second*(8/audio3.ComputeRMS().second)));
+    }
+
+}
+
+TEST_CASE("Mono Audio FadeIn method","Tests functionality of the Mono FadeIn method")
+{
+    //8 bit
+    std::vector<int8_t> v = {1,2,3,4,5,6,7};
+    tldlir001::Audio<int8_t> audio(v);
+    tldlir001::Audio<int8_t> audio2 = audio.FadeIn(1,1,3);
+
+    int fadeSampleNo = 1;
+    int rampL = 1*3;
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio2.getData()[i] == (int8_t)((fadeSampleNo/(float)rampL)*audio.getData()[i]));
+    }
+
+    //16 bit
+    std::vector<int16_t> v2 = {1,2,3,4,5,6,7};
+    tldlir001::Audio<int16_t> audio3(v2);
+    tldlir001::Audio<int16_t> audio4 = audio3.FadeIn(1,1,3);
+
+    for (int i = 0; i < audio4.getData().size(); ++i)
+    {
+       REQUIRE(audio4.getData()[i] == (int16_t)((fadeSampleNo/(float)rampL)*audio3.getData()[i]));
+    }
+}
+
+TEST_CASE("Stereo Audio FadeIn method","Tests functionality of the Stereo FadeIn method")
+{
+    //8 bit
+    std::vector<pair<int8_t,int8_t>> v = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4),make_pair(5,5),make_pair(6,6),make_pair(7,7)};
+    tldlir001::Audio<pair<int8_t,int8_t>> audio(v);
+    tldlir001::Audio<pair<int8_t,int8_t>> audio2 = audio.FadeIn(1,1,3);
+
+    int fadeSampleNo = 1;
+    int rampL = 1*3;
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio2.getData()[i].first == (int8_t)((fadeSampleNo/(float)rampL)*audio.getData()[i].first));
+       REQUIRE(audio2.getData()[i].second == (int8_t)((fadeSampleNo/(float)rampL)*audio.getData()[i].second));
+    }
+
+    //16 bit
+    std::vector<pair<int16_t,int16_t>> v2 = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4),make_pair(5,5),make_pair(6,6),make_pair(7,7)};
+    tldlir001::Audio<pair<int16_t,int16_t>> audio3(v2);
+    tldlir001::Audio<pair<int16_t,int16_t>> audio4 = audio3.FadeIn(1,1,3);
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio4.getData()[i].first == (int16_t)((fadeSampleNo/(float)rampL)*audio3.getData()[i].first));
+       REQUIRE(audio4.getData()[i].second == (int16_t)((fadeSampleNo/(float)rampL)*audio3.getData()[i].second));
+    }
+}
+
+TEST_CASE("Mono Audio FadeOut method","Tests functionality of the Mono FadeOut method")
+{
+    //8 bit
+    std::vector<int8_t> v = {1,2,3,4,5,6,7};
+    tldlir001::Audio<int8_t> audio(v);
+    tldlir001::Audio<int8_t> audio2 = audio.FadeOut(1,1,3);
+
+    int fadeSampleNo = 1;
+    int rampL = 1*3;
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio2.getData()[i] == (int8_t)(( 1 - (fadeSampleNo/(float)rampL) ) * audio.getData()[i]));
+    }
+
+    //16 bit
+    std::vector<int16_t> v2 = {1,2,3,4,5,6,7};
+    tldlir001::Audio<int16_t> audio3(v2);
+    tldlir001::Audio<int16_t> audio4 = audio3.FadeOut(1,1,3);
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio4.getData()[i] == (int16_t)((1 - (fadeSampleNo/(float)rampL) )*audio3.getData()[i]));
+    }
+}
+
+TEST_CASE("Stereo Audio FadeOut method","Tests functionality of the Stereo FadeOut method")
+{
+    //8 bit
+    std::vector<pair<int8_t,int8_t>> v = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4),make_pair(5,5),make_pair(6,6),make_pair(7,7)};
+    tldlir001::Audio<pair<int8_t,int8_t>> audio(v);
+    tldlir001::Audio<pair<int8_t,int8_t>> audio2 = audio.FadeOut(1,1,3);
+
+    int fadeSampleNo = 1;
+    int rampL = 1*3;
+
+    for (int i = 0; i < audio2.getData().size(); ++i)
+    {
+       REQUIRE(audio2.getData()[i].first == (int8_t)((1 - (fadeSampleNo/(float)rampL) )*audio.getData()[i].first));
+       REQUIRE(audio2.getData()[i].second == (int8_t)((1 - (fadeSampleNo/(float)rampL) )*audio.getData()[i].second));
+    }
+
+    //16 bit
+    std::vector<pair<int16_t,int16_t>> v2 = {make_pair(1,1),make_pair(2,2),make_pair(3,3),make_pair(4,4),make_pair(5,5),make_pair(6,6),make_pair(7,7)};
+    tldlir001::Audio<pair<int16_t,int16_t>> audio3(v2);
+    tldlir001::Audio<pair<int16_t,int16_t>> audio4 = audio3.FadeOut(1,1,3);
+
+    for (int i = 0; i < audio4.getData().size(); ++i)
+    {
+       REQUIRE(audio4.getData()[i].first == (int16_t)((1 - (fadeSampleNo/(float)rampL) )*audio3.getData()[i].first));
+       REQUIRE(audio4.getData()[i].second == (int16_t)((1 - (fadeSampleNo/(float)rampL) )*audio3.getData()[i].second));
+    }
+}

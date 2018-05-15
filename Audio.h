@@ -15,6 +15,7 @@
 #include <numeric>
 #include <cmath>
 #include <memory>
+#include <cstdint>
 
 #ifndef AUDIOMANIPULATION_AUDIO_H
 #define AUDIOMANIPULATION_AUDIO_H
@@ -201,8 +202,87 @@ namespace tldlir001
              return RMS;
         }
 
-        Audio Normalization()
-        {}
+        Audio Normalise(float DesiredRMS)
+        {
+            Audio<A> copy = *this;
+            std::vector<A> v;
+            float currentRMS = copy.ComputeRMS();
+
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                v.push_back(copy.data[i]*(DesiredRMS/currentRMS));
+            }
+
+            /*
+            // Clamp here (Not sure if correct but causes warnings so commented it out)
+            int8_t eg8 = 0;
+            int16_t eg16 = 0;
+            if (std::find(v.begin(), v.end(), eg8) != v.end()) //8 bit clamp
+            {
+                for (int i = 0; i < v.size(); ++i)
+                {
+                    if (v[i] < INT8_MIN)
+                    {
+                        v[i] = INT8_MIN;
+                    }
+
+                    if (v[i] > INT8_MAX)
+                    {
+                        v[i] = INT8_MAX;
+                    }
+                }
+                
+            }
+            else if(std::find(v.begin(), v.end(), eg16) != v.end()) //16 bit clamp
+            {
+                for (int i = 0; i < v.size(); ++i)
+                {
+                    if (v[i] < INT16_MIN)
+                    {
+                        v[i] = INT16_MIN;
+                    }
+
+                    if (v[i] > INT16_MAX)
+                    {
+                        v[i] = INT16_MAX;
+                    }
+                }
+            }
+            */
+
+            Audio <A> audio(v);
+            return audio;
+        }
+
+        Audio FadeIn(int fadeSampleNo, int sampleRate, int seconds)
+        {
+            Audio<A> copy = *this;
+            std::vector<A> v;
+
+            int rampLength = seconds*sampleRate;
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                v.push_back((fadeSampleNo/(float)rampLength)*copy.data[i]);
+            }
+
+            Audio <A> audio(v);
+            return audio;
+        }
+
+        Audio FadeOut(int fadeSampleNo, int sampleRate, int seconds)
+        {
+            Audio<A> copy = *this;
+            std::vector<A> v;
+
+            int rampLength = seconds*sampleRate;
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                v.push_back((1.0 - fadeSampleNo/(float)rampLength)*copy.data[i]);
+            }
+
+            Audio <A> audio(v);
+            return audio;
+        }
 
 
         void load(std::string name)
@@ -453,6 +533,53 @@ namespace tldlir001
              float RMS_R = sqrt(avgSqrR);
              std::pair<float,float> p = std::make_pair(RMS_L,RMS_R);
              return p;
+        }
+
+
+        Audio Normalise(float DesiredRMSL, float DesiredRMSR)
+        {
+            Audio<std::pair<A,A>> copy = *this;
+            std::vector<std::pair<A,A>> v;
+            std::pair<float,float> currentRMS = copy.ComputeRMS();
+
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                v.push_back(std::make_pair(copy.data[i].first*(DesiredRMSL/currentRMS.first) , copy.data[i].second*(DesiredRMSR/currentRMS.second)));
+            }
+
+            Audio <std::pair<A,A>> audio(v);
+            return audio;
+        }
+
+        Audio FadeIn(int fadeSampleNo, int sampleRate, int seconds)
+        {
+            Audio<std::pair<A,A>> copy = *this;
+            std::vector<std::pair<A,A>> v;
+
+            int rampLength = seconds*sampleRate;
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                v.push_back(std::make_pair((fadeSampleNo/(float)rampLength)*copy.data[i].first , (fadeSampleNo/(float)rampLength)*copy.data[i].second));
+            }
+
+            Audio <std::pair<A,A>> audio(v);
+            return audio;
+        }
+
+        Audio FadeOut(int fadeSampleNo, int sampleRate, int seconds)
+        {
+            Audio<std::pair<A,A>> copy = *this;
+            std::vector<std::pair<A,A>> v;
+
+            int rampLength = seconds*sampleRate;
+            for (int i = 0; i < copy.data.size(); ++i)
+            {
+                 //v.push_back((1.0 - fadeSampleNo/(float)rampLength)*copy.data[i]);
+                v.push_back(std::make_pair((1.0 - fadeSampleNo/(float)rampLength)*copy.data[i].first , (1.0 - fadeSampleNo/(float)rampLength)*copy.data[i].second));
+            }
+
+            Audio <std::pair<A,A>> audio(v);
+            return audio;
         }
 
 
